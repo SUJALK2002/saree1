@@ -28,7 +28,7 @@ export default function Navbar({
   }, []);
 
   const openWhatsApp = () => {
-    const num = storeConfig.whatsappNumber || "919876543210";
+    const num = storeConfig.whatsappNumber || "918669851581";
     window.open(
       `https://wa.me/${num}?text=Hello%20SareeVira!%20I%20would%20like%20to%20enquire%20about%20your%20saree%20collections.`,
       "_blank"
@@ -188,6 +188,8 @@ export default function Navbar({
         <button
           className="mobile-menu-btn"
           aria-label="Toggle navigation menu"
+          aria-expanded={mobileMenuOpen}
+          aria-controls="mobile-navigation"
           onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
         >
           {mobileMenuOpen ? <X size={26} /> : <Menu size={26} />}
@@ -196,7 +198,7 @@ export default function Navbar({
 
       {/* Clean Mobile Menu Drawer */}
       {mobileMenuOpen && (
-        <div className="simple-mobile-drawer">
+        <nav className="simple-mobile-drawer" id="mobile-navigation" aria-label="Mobile navigation">
           <div className="mobile-simple-links">
             <a
               href="#"
@@ -223,83 +225,62 @@ export default function Navbar({
             </button>
           </div>
 
-          <div className="mobile-login-box">
-            <div className="m-login-head">Account & Access</div>
+          <div className="mobile-account-actions">
             {!currentUser ? (
-              <div className="m-login-options">
-                <button
-                  className="m-role-btn"
-                  onClick={() => {
-                    setMobileMenuOpen(false);
-                    onQuickDemoCustomer();
-                  }}
-                >
-                  <User size={16} /> 1] Customer Demo Login
-                </button>
-                <button
-                  className="m-role-btn admin"
-                  onClick={() => {
-                    setMobileMenuOpen(false);
-                    onQuickDemoAdmin();
-                  }}
-                >
-                  <Shield size={16} /> 2] Admin Demo Login
-                </button>
-                <button
-                  className="m-signin-full"
-                  onClick={() => {
-                    setMobileMenuOpen(false);
-                    onOpenLogin("customer");
-                  }}
-                >
-                  <LogIn size={15} /> Open Sign In Dialog
-                </button>
-              </div>
+            <button
+              className="mobile-account-btn"
+              onClick={() => {
+                setMobileMenuOpen(false);
+                onOpenLogin("customer");
+              }}
+            >
+              <LogIn size={16} /> Sign in
+            </button>
             ) : currentUser.role === "admin" ? (
-              <div className="m-login-options">
-                <button
-                  className="button primary full-width"
-                  onClick={() => {
-                    setMobileMenuOpen(false);
-                    onOpenAdminDashboard();
-                  }}
-                >
-                  <LayoutDashboard size={16} /> Open Admin Dashboard
-                </button>
-                <button
-                  className="button secondary full-width"
-                  onClick={() => {
-                    setMobileMenuOpen(false);
-                    onLogout();
-                  }}
-                >
-                  <LogOut size={15} /> Sign Out Admin
-                </button>
-              </div>
+            <>
+              <button
+                className="mobile-account-btn primary"
+                onClick={() => {
+                  setMobileMenuOpen(false);
+                  onOpenAdminDashboard();
+                }}
+              >
+                <LayoutDashboard size={16} /> Admin dashboard
+              </button>
+              <button
+                className="mobile-account-btn"
+                onClick={() => {
+                  setMobileMenuOpen(false);
+                  onLogout();
+                }}
+              >
+                <LogOut size={15} /> Sign out
+              </button>
+            </>
             ) : (
-              <div className="m-login-options">
-                <button
-                  className="button secondary full-width"
-                  onClick={() => {
-                    setMobileMenuOpen(false);
-                    onOpenCustomerProfile();
-                  }}
-                >
-                  <User size={16} /> Customer Orders & Profile
-                </button>
-                <button
-                  className="button secondary full-width"
-                  onClick={() => {
-                    setMobileMenuOpen(false);
-                    onLogout();
-                  }}
-                >
-                  <LogOut size={15} /> Sign Out
-                </button>
-              </div>
+            <>
+              <button
+                className="mobile-account-btn"
+                onClick={() => {
+                  setMobileMenuOpen(false);
+                  onOpenCustomerProfile();
+                }}
+              >
+                <User size={16} /> My account
+              </button>
+              <button
+                className="mobile-account-btn"
+                onClick={() => {
+                  setMobileMenuOpen(false);
+                  onLogout();
+                }}
+              >
+                <LogOut size={15} /> Sign Out
+              </button>
+            </>
             )}
           </div>
-        </div>
+        </nav>
       )}
     </>
   );

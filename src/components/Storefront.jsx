@@ -45,7 +45,7 @@ export default function Storefront({
   });
 
   const handleGeneralWhatsApp = () => {
-    const num = storeConfig.whatsappNumber || "919876543210";
+    const num = storeConfig.whatsappNumber || "918669851581";
     window.open(`https://wa.me/${num}?text=Hello%20SareeVira!%20I%20would%20like%20to%20view%20your%20latest%20festive%20collection.`, "_blank");
   };
 

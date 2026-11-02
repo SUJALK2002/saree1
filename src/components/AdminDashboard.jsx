@@ -882,7 +882,7 @@ export default function AdminDashboard({
                 <div className="admin-form-card">
                   <h3>WhatsApp & Support Channels</h3>
                   <div className="form-group">
-                    <label>WhatsApp Number (Country code + number, e.g. 919876543210)</label>
+                    <label>WhatsApp Number (Country code + number, e.g. 918669851581)</label>
                     <input
                       value={siteData.storeConfig.whatsappNumber}
                       onChange={(e) => updateStoreConfig("whatsappNumber", e.target.value)}

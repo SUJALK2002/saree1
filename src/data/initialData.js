@@ -3,7 +3,7 @@ export const initialSiteData = {
     storeName: "SareeVira",
     tagline: "ETHNIC DRAPES",
     announcement: "✨ Festive Season Sale: Complimentary Silk Care Kit & Free Express Delivery across India | Handwoven Luxury",
-    whatsappNumber: "919876543210",
+    whatsappNumber: "918669851581",
     currency: "₹",
     phoneDisplay: "+91 98765 43210",
     email: "care@sareevira.com",

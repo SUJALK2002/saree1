@@ -21,7 +21,7 @@ export default function SareeCatalogModal({
   currency = "₹",
   wished = false,
   onToggleWishlist,
-  whatsappNumber = "919876543210",
+  whatsappNumber = "918669851581",
   onSubmitEnquiry
 }) {
   const [activePhotoIndex, setActivePhotoIndex] = useState(0);
@@ -99,7 +99,7 @@ export default function SareeCatalogModal({
       createdAt: new Date().toISOString()
     });
 
-    const whatsappRecipient = (whatsappNumber || "919876543210").replace(/\D/g, "");
+    const whatsappRecipient = (whatsappNumber || "918669851581").replace(/\D/g, "");
     const whatsappMessage = `Hello SareeVira! I would like to enquire about:
 *${product.name}* (ID: ${product.id})
 Price: ${money(product.price)}
