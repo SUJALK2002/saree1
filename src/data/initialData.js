@@ -3,7 +3,7 @@ export const initialSiteData = {
     storeName: "SareeVira",
     tagline: "ETHNIC DRAPES",
     announcement: "✨ Festive Season Sale: Complimentary Silk Care Kit & Free Express Delivery across India | Handwoven Luxury",
-    whatsappNumber: "918669851581",
+    whatsappNumber: import.meta.env.VITE_WHATSAPP_NUMBER || "918669851581",
     currency: "₹",
     phoneDisplay: "+91 98765 43210",
     email: "care@sareevira.com",
@@ -391,70 +391,3 @@ export const initialSiteData = {
     stat3Label: "Happy Drapes Delivered"
   }
 };
-
-export const demoAccounts = {
-  customer: {
-    role: "customer",
-    name: "Priya Sharma",
-    email: "priya@sareevira.com",
-    phone: "+91 98201 12345",
-    city: "Mumbai, Maharashtra",
-    memberSince: "Oct 2024",
-    orders: [
-      {
-        id: "ORD-8942",
-        date: "24 Oct 2024",
-        product: "Royal Peacock Paithani Saree",
-        price: 6499,
-        status: "Delivered",
-        trackingId: "BLUEDART-8829103"
-      },
-      {
-        id: "ORD-7193",
-        date: "12 Aug 2024",
-        product: "Pastel Blush Designer Organza",
-        price: 3499,
-        status: "Delivered",
-        trackingId: "DELHIVERY-449102"
-      }
-    ]
-  },
-  admin: {
-    role: "admin",
-    name: "Vira Patel",
-    title: "Store Director & Curator",
-    email: "admin@sareevira.com",
-    badge: "Super Admin",
-    accessLevel: "Full Website Control"
-  }
-};
-
-export const sampleInquiries = [
-  {
-    id: "INQ-101",
-    customerName: "Ananya Deshmukh",
-    phone: "+91 98721 00412",
-    product: "Royal Peacock Paithani Saree",
-    message: "Is custom matching blouse stitching available with this purple Paithani?",
-    status: "Replied on WhatsApp",
-    time: "10 mins ago"
-  },
-  {
-    id: "INQ-102",
-    customerName: "Meera Krishnan",
-    phone: "+91 97112 55921",
-    product: "Temple Border Bridal Kanjivaram",
-    message: "Need urgent delivery in Chennai before Friday for an engagement ceremony.",
-    status: "Dispatched",
-    time: "2 hours ago"
-  },
-  {
-    id: "INQ-103",
-    customerName: "Sunita Agarwal",
-    phone: "+91 98300 44102",
-    product: "Varanasi Antique Kadwa Banarasi",
-    message: "Can you send a high-res video of the pallu and zari border drape?",
-    status: "Video Sent",
-    time: "Yesterday"
-  }
-];

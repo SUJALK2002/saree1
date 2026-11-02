@@ -5,8 +5,6 @@ export default function Navbar({
   storeConfig,
   currentUser,
   onOpenLogin,
-  onQuickDemoCustomer,
-  onQuickDemoAdmin,
   onLogout,
   onOpenCustomerProfile,
   onOpenAdminDashboard,
@@ -71,30 +69,17 @@ export default function Navbar({
                   <ChevronDown size={14} className={`caret ${dropdownOpen ? "rotate" : ""}`} />
                 </button>
 
-                {/* Dropdown Menu for 1] Customer and 2] Admin with Demo Logins */}
                 {dropdownOpen && (
                   <div className="simple-login-dropdown">
                     <div className="dropdown-title">Choose Account Type</div>
-                    
-                    {/* 1] Customer Login Option */}
                     <div className="dropdown-role-card">
                       <div className="role-top">
                         <div className="role-label">
                           <User size={15} className="role-icon customer-icon" />
-                          <b>1] Customer Login</b>
+                          <b>Customer account</b>
                         </div>
-                        <button
-                          className="quick-demo-pill"
-                          onClick={() => {
-                            setDropdownOpen(false);
-                            onQuickDemoCustomer();
-                          }}
-                          title="Instant 1-Click Demo Login as Customer"
-                        >
-                          ⚡ 1-Click Demo
-                        </button>
                       </div>
-                      <p>View orders, wishlist & receive personal styling support.</p>
+                      <p>Sign in or create an account to save your details.</p>
                       <button
                         className="role-signin-link"
                         onClick={() => {
@@ -102,31 +87,20 @@ export default function Navbar({
                           onOpenLogin("customer");
                         }}
                       >
-                        Sign In as Customer →
+                        Sign in or create account →
                       </button>
                     </div>
 
                     <div className="dropdown-divider" />
 
-                    {/* 2] Admin Login Option */}
                     <div className="dropdown-role-card admin-highlight">
                       <div className="role-top">
                         <div className="role-label">
                           <Shield size={15} className="role-icon admin-icon" />
-                          <b>2] Admin Portal</b>
+                          <b>Store administrator</b>
                         </div>
-                        <button
-                          className="quick-demo-pill admin-pill"
-                          onClick={() => {
-                            setDropdownOpen(false);
-                            onQuickDemoAdmin();
-                          }}
-                          title="Instant 1-Click Demo Login as Admin"
-                        >
-                          ⚡ 1-Click Demo
-                        </button>
                       </div>
-                      <p>Full control over sarees, hero banners, and site content.</p>
+                      <p>Restricted access for the configured store administrator.</p>
                       <button
                         className="role-signin-link"
                         onClick={() => {
@@ -134,7 +108,7 @@ export default function Navbar({
                           onOpenLogin("admin");
                         }}
                       >
-                        Sign In as Admin →
+                        Administrator sign in →
                       </button>
                     </div>
                   </div>

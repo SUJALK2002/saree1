@@ -16,15 +16,20 @@ import {
   ExternalLink,
   Save,
   Eye,
+  LogOut,
   X,
   Search,
   CheckCircle2,
   ArrowRight
 } from "lucide-react";
-import { sampleInquiries } from "../data/initialData";
+import SafeImage from "./SafeImage";
 
 export default function AdminDashboard({
   siteData,
+  inquiries = [],
+  currentUser,
+  backendConfigured,
+  onRefreshInquiries,
   onUpdateSiteData,
   onResetToDefaults,
   onCloseDashboard,
@@ -32,7 +37,16 @@ export default function AdminDashboard({
 }) {
   const [activeTab, setActiveTab] = useState("overview");
   const [toastMessage, setToastMessage] = useState("");
-  const inquiries = siteData.inquiries?.length ? siteData.inquiries : sampleInquiries;
+  const [refreshingInquiries, setRefreshingInquiries] = useState(false);
+
+  const refreshInquiries = async () => {
+    setRefreshingInquiries(true);
+    try {
+      await onRefreshInquiries?.();
+    } finally {
+      setRefreshingInquiries(false);
+    }
+  };
 
   // Product Add / Edit Modal state
   const [productModalOpen, setProductModalOpen] = useState(false);
@@ -268,8 +282,11 @@ export default function AdminDashboard({
           </button>
           <div className="admin-user-pill">
             <Shield size={14} />
-            <span>Super Admin (Vira Patel)</span>
+            <span>{currentUser?.name || "Store Administrator"}</span>
           </div>
+          <button className="topbar-btn" onClick={onLogout} title="Sign out of the administrator account">
+            <LogOut size={15} /> <span>Sign out</span>
+          </button>
           <button className="topbar-btn exit-btn" onClick={onCloseDashboard}>
             <X size={16} />
           </button>
@@ -337,8 +354,10 @@ export default function AdminDashboard({
           </nav>
 
           <div className="sidebar-footer-card">
-            <p><b>✨ Live Synced</b></p>
-            <small>All edits immediately update the customer-facing website and persist in local storage.</small>
+            <p><b>{backendConfigured ? "Supabase configured" : "Supabase setup required"}</b></p>
+            <small>{backendConfigured
+              ? "Website content is saved to the connected Supabase project."
+              : "Supabase is not configured. Website changes cannot be shared or saved remotely."}</small>
           </div>
         </aside>
 
@@ -350,7 +369,7 @@ export default function AdminDashboard({
               <div className="tab-header">
                 <div>
                   <h2>Store Operations Overview</h2>
-                  <p>Welcome back, Vira Patel. Real-time control center for {siteData.storeConfig.storeName}.</p>
+                  <p>Welcome back, {currentUser?.name || "Store Administrator"}. Content control center for {siteData.storeConfig.storeName}.</p>
                 </div>
                 <div className="tab-header-buttons">
                   <button className="button primary" onClick={openNewProductModal}>
@@ -392,8 +411,8 @@ export default function AdminDashboard({
                   <div className="metric-icon t-icon"><Shield size={22} /></div>
                   <div className="metric-data">
                     <span className="m-label">Website Status</span>
-                    <b className="m-val green-text">Published Live</b>
-                    <small className="m-sub">Navbar height: 96px luxury</small>
+                    <b className="m-val green-text">Storefront active</b>
+                    <small className="m-sub">Customer catalogue is available</small>
                   </div>
                 </div>
               </div>
@@ -444,6 +463,9 @@ export default function AdminDashboard({
                         <small className="inq-msg">"{inq.message}"</small>
                       </div>
                     ))}
+                    {!inquiries.length && (
+                      <p className="empty-orders">No customer enquiries have been received yet.</p>
+                    )}
                   </div>
                 </div>
               </div>
@@ -509,7 +531,7 @@ export default function AdminDashboard({
                       <tr key={p.id}>
                         <td>
                           <div className="table-product-cell">
-                            <img src={p.image} alt={p.name} className="table-thumb" />
+                            <SafeImage src={p.image} alt={p.name} className="table-thumb" />
                             <div>
                               <b>{p.name}</b>
                               <span className="p-id">ID: {p.id}</span>
@@ -633,7 +655,7 @@ export default function AdminDashboard({
                     />
                   </div>
                   <div className="hero-img-preview-box">
-                    <img src={siteData.hero.heroImage} alt="Hero Preview" />
+                    <SafeImage src={siteData.hero.heroImage} alt="Hero Preview" />
                     <span>Live Hero Image Preview</span>
                   </div>
 
@@ -691,7 +713,7 @@ export default function AdminDashboard({
                 {siteData.collections.map((col, idx) => (
                   <div key={col.id || idx} className="collection-admin-card">
                     <div className="col-preview-wrapper">
-                      <img src={col.image} alt={col.name} />
+                      <SafeImage src={col.image} alt={col.name} />
                       <span className="col-number">Card #{idx + 1}</span>
                     </div>
                     <div className="col-inputs">
@@ -920,8 +942,15 @@ export default function AdminDashboard({
               <div className="tab-header">
                 <div>
                   <h2>Customer Enquiries & WhatsApp Leads</h2>
-                  <p>Inquiries received from customer product detail clicks and custom orders.</p>
+                  <p>Customer contact details and saree enquiries saved from the product catalogue.</p>
                 </div>
+                <button
+                  className="button secondary"
+                  onClick={refreshInquiries}
+                  disabled={refreshingInquiries}
+                >
+                  <RotateCcw size={15} /> {refreshingInquiries ? "Refreshing..." : "Refresh enquiries"}
+                </button>
               </div>
 
               <div className="inquiries-table-box">
@@ -951,6 +980,11 @@ export default function AdminDashboard({
                         </td>
                       </tr>
                     ))}
+                    {!inquiries.length && (
+                      <tr>
+                        <td colSpan="6" className="empty-orders">No customer enquiries have been received yet.</td>
+                      </tr>
+                    )}
                   </tbody>
                 </table>
               </div>

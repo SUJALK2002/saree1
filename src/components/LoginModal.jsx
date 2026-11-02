@@ -1,166 +1,356 @@
-import React, { useState } from "react";
-import { X, User, Shield, CheckCircle, ArrowRight, Sparkles, Lock, Mail, Key } from "lucide-react";
-import { demoAccounts } from "../data/initialData";
+import React, { useEffect, useState } from "react";
+import {
+  ArrowRight,
+  CheckCircle,
+  Key,
+  Lock,
+  Mail,
+  Shield,
+  User,
+  X
+} from "lucide-react";
+import { sendPasswordReset, updatePassword } from "../lib/auth";
 
-export default function LoginModal({ isOpen, onClose, onLogin, initialTab = "customer" }) {
+export default function LoginModal({
+  isOpen,
+  onClose,
+  onLogin,
+  initialTab = "customer",
+  adminEmail = "",
+  backendConfigured,
+  passwordRecovery = false
+}) {
   const [activeTab, setActiveTab] = useState(initialTab);
-  const [customerEmail, setCustomerEmail] = useState("priya@sareevira.com");
-  const [customerPassword, setCustomerPassword] = useState("••••••••");
-  const [adminEmail, setAdminEmail] = useState("admin@sareevira.com");
-  const [adminPassword, setAdminPassword] = useState("••••••••");
+  const [customerMode, setCustomerMode] = useState("signin");
+  const [recoveryPassword, setRecoveryPassword] = useState("");
+  const [passwordConfirmation, setPasswordConfirmation] = useState("");
+  const [fullName, setFullName] = useState("");
+  const [phone, setPhone] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [errorMessage, setErrorMessage] = useState("");
+  const [notice, setNotice] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [recoveryMode, setRecoveryMode] = useState(passwordRecovery);
 
-  // Keep tab in sync if initialTab changes
-  React.useEffect(() => {
-    if (initialTab) setActiveTab(initialTab);
-  }, [initialTab]);
+  useEffect(() => {
+    if (isOpen) {
+      setActiveTab(initialTab);
+      setRecoveryPassword("");
+      setPasswordConfirmation("");
+      setEmail(initialTab === "admin" ? adminEmail : "");
+      setPassword("");
+      setRecoveryMode(passwordRecovery);
+      setCustomerMode("signin");
+      setErrorMessage("");
+      setNotice("");
+    }
+  }, [isOpen, initialTab, adminEmail, passwordRecovery]);
 
   if (!isOpen) return null;
 
-  const handleCustomerLogin = (e) => {
-    e?.preventDefault();
-    onLogin(demoAccounts.customer);
-    onClose();
+  const isSignup = !recoveryMode && activeTab === "customer" && customerMode === "signup";
+
+  const handleSubmit = async (event) => {
+    event.preventDefault();
+    setErrorMessage("");
+    setNotice("");
+    setIsSubmitting(true);
+
+    try {
+      const result = await onLogin({
+        role: activeTab,
+        mode: isSignup ? "signup" : "signin",
+        email,
+        password,
+        fullName,
+        phone
+      });
+
+      if (result?.requiresEmailVerification) {
+        setNotice("Check your email to confirm your account, then sign in.");
+        setPassword("");
+        return;
+      }
+
+      onClose();
+    } catch (error) {
+      setErrorMessage(error.message || "Unable to complete sign-in. Please try again.");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
-  const handleAdminLogin = (e) => {
-    e?.preventDefault();
-    onLogin(demoAccounts.admin);
-    onClose();
+  const handlePasswordReset = async () => {
+    setErrorMessage("");
+    setNotice("");
+    if (!email.trim()) {
+      setErrorMessage("Enter your account email first to reset your password.");
+      return;
+    }
+    setIsSubmitting(true);
+    try {
+      await sendPasswordReset(email);
+      setNotice("If the account exists, a password reset link has been sent.");
+    } catch (error) {
+      setErrorMessage(error.message || "Unable to send a password reset email.");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handlePasswordUpdate = async (event) => {
+    event.preventDefault();
+    setErrorMessage("");
+    if (recoveryPassword !== passwordConfirmation) {
+      setErrorMessage("The passwords do not match.");
+      return;
+    }
+
+    setIsSubmitting(true);
+    try {
+      await updatePassword(recoveryPassword);
+      onClose();
+    } catch (error) {
+      setErrorMessage(error.message || "Unable to update your password.");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const switchTab = (tab) => {
+    setActiveTab(tab);
+    setEmail(tab === "admin" ? adminEmail : "");
+    setPassword("");
+    setCustomerMode("signin");
+    setErrorMessage("");
+    setNotice("");
   };
 
   return (
     <div className="modal-backdrop" onClick={onClose}>
-      <div className="modal-card" onClick={(e) => e.stopPropagation()}>
-        <button className="modal-close" onClick={onClose} aria-label="Close modal">
+      <div
+        className="modal-card auth-modal"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="auth-title"
+        onClick={(event) => event.stopPropagation()}
+      >
+        <button className="modal-close" onClick={onClose} aria-label="Close sign-in">
           <X size={20} />
         </button>
 
         <div className="modal-header">
           <div className="modal-badge">
             <span className="lotus">✿</span>
-            <span>SAREEVIRA PORTAL</span>
+            <span>SAREEVIRA ACCOUNT</span>
           </div>
-          <h2>Welcome to SareeVira</h2>
-          <p>Select your account type or use one of our instant 1-click demo logins below.</p>
+          <h2 id="auth-title">
+            {recoveryMode ? "Choose a new password" : isSignup ? "Create your account" : "Welcome to SareeVira"}
+          </h2>
+          <p>
+            {recoveryMode
+              ? "Enter and confirm a new password for your account."
+              : isSignup
+              ? "Create an account to save your details and enjoy a personal shopping experience."
+              : "Sign in to your customer or store administrator account."}
+          </p>
         </div>
 
-        {/* 2 Login Tabs */}
-        <div className="login-tab-pills">
+        {!recoveryMode && <div className="login-tab-pills" role="tablist" aria-label="Account type">
           <button
+            type="button"
+            role="tab"
+            aria-selected={activeTab === "customer"}
             className={`tab-pill ${activeTab === "customer" ? "active" : ""}`}
-            onClick={() => setActiveTab("customer")}
+            onClick={() => switchTab("customer")}
           >
-            <User size={16} />
-            <span>1] Customer Login</span>
+            <User size={16} /> Customer
           </button>
           <button
+            type="button"
+            role="tab"
+            aria-selected={activeTab === "admin"}
             className={`tab-pill ${activeTab === "admin" ? "active" : ""}`}
-            onClick={() => setActiveTab("admin")}
+            onClick={() => switchTab("admin")}
           >
-            <Shield size={16} />
-            <span>2] Admin Portal</span>
+            <Shield size={16} /> Admin
           </button>
-        </div>
+        </div>}
 
-        {activeTab === "customer" ? (
-          <div className="tab-body">
-            <div className="demo-highlight-box customer-box">
-              <div className="highlight-head">
-                <Sparkles size={16} className="sparkle-icon" />
-                <b>Instant Demo Customer Access</b>
-              </div>
-              <p>Experience the boutique as an existing VIP customer with order history, saved wishlist & priority WhatsApp drape booking.</p>
-              <button className="button primary full-width demo-btn" onClick={handleCustomerLogin}>
-                ⚡ 1-Click Demo Login as Customer (Priya Sharma) <ArrowRight size={15} />
-              </button>
-            </div>
-
-            <div className="or-divider">
-              <span>OR ENTER CREDENTIALS</span>
-            </div>
-
-            <form onSubmit={handleCustomerLogin} className="auth-form">
-              <div className="form-group">
-                <label><Mail size={14} /> Email Address</label>
-                <input
-                  type="email"
-                  value={customerEmail}
-                  onChange={(e) => setCustomerEmail(e.target.value)}
-                  placeholder="e.g. priya@sareevira.com"
-                  required
-                />
-              </div>
-              <div className="form-group">
-                <label><Lock size={14} /> Password</label>
-                <input
-                  type="password"
-                  value={customerPassword}
-                  onChange={(e) => setCustomerPassword(e.target.value)}
-                  placeholder="Enter your password"
-                  required
-                />
-              </div>
-              <div className="form-helper">
-                <span>Demo Email: <code>priya@sareevira.com</code></span>
-                <span>Pass: <code>demo123</code></span>
-              </div>
-              <button type="submit" className="button secondary full-width">
-                Sign In as Customer <ArrowRight size={15} />
-              </button>
-            </form>
-          </div>
-        ) : (
-          <div className="tab-body">
-            <div className="demo-highlight-box admin-box">
-              <div className="highlight-head">
-                <Shield size={16} className="shield-icon" />
-                <b>Instant Demo Admin Access</b>
-              </div>
-              <p>Access the full <b>Admin Dashboard</b> to edit hero banners, manage products, change prices, update collections, and control all website content.</p>
-              <button className="button admin-accent full-width demo-btn" onClick={handleAdminLogin}>
-                ⚡ 1-Click Demo Login as Admin (Super Admin) <ArrowRight size={15} />
-              </button>
-            </div>
-
-            <div className="or-divider">
-              <span>OR ENTER ADMIN CREDENTIALS</span>
-            </div>
-
-            <form onSubmit={handleAdminLogin} className="auth-form">
-              <div className="form-group">
-                <label><Mail size={14} /> Admin Email</label>
-                <input
-                  type="email"
-                  value={adminEmail}
-                  onChange={(e) => setAdminEmail(e.target.value)}
-                  placeholder="admin@sareevira.com"
-                  required
-                />
-              </div>
-              <div className="form-group">
-                <label><Key size={14} /> Admin Secret Key / Password</label>
-                <input
-                  type="password"
-                  value={adminPassword}
-                  onChange={(e) => setAdminPassword(e.target.value)}
-                  placeholder="••••••••"
-                  required
-                />
-              </div>
-              <div className="form-helper">
-                <span>Demo Admin: <code>admin@sareevira.com</code></span>
-                <span>Pass: <code>admin123</code></span>
-              </div>
-              <button type="submit" className="button primary full-width">
-                Sign In to Admin Dashboard <ArrowRight size={15} />
-              </button>
-            </form>
+        {!recoveryMode && activeTab === "customer" && (
+          <div className="auth-mode-toggle" aria-label="Customer account action">
+            <button
+              type="button"
+              className={customerMode === "signin" ? "active" : ""}
+              onClick={() => {
+                setCustomerMode("signin");
+                setErrorMessage("");
+                setNotice("");
+              }}
+            >
+              Sign in
+            </button>
+            <button
+              type="button"
+              className={customerMode === "signup" ? "active" : ""}
+              onClick={() => {
+                setCustomerMode("signup");
+                setErrorMessage("");
+                setNotice("");
+              }}
+            >
+              Create account
+            </button>
           </div>
         )}
 
+        {!backendConfigured && (
+          <div className="auth-message error" role="alert">
+            Accounts are temporarily unavailable. The store administrator must configure the Supabase project before launch.
+          </div>
+        )}
+        {errorMessage && <div className="auth-message error" role="alert">{errorMessage}</div>}
+        {notice && <div className="auth-message success" role="status">{notice}</div>}
+
+        <form onSubmit={recoveryMode ? handlePasswordUpdate : handleSubmit} className="auth-form">
+          {recoveryMode ? (
+            <>
+              <div className="form-group">
+                <label htmlFor="recovery-password"><Lock size={14} /> New password</label>
+                <input
+                  id="recovery-password"
+                  name="new-password"
+                  type="password"
+                  autoComplete="new-password"
+                  value={recoveryPassword}
+                  onChange={(event) => setRecoveryPassword(event.target.value)}
+                  minLength={8}
+                  maxLength={128}
+                  required
+                />
+              </div>
+              <div className="form-group">
+                <label htmlFor="password-confirmation"><Lock size={14} /> Confirm new password</label>
+                <input
+                  id="password-confirmation"
+                  name="password-confirmation"
+                  type="password"
+                  autoComplete="new-password"
+                  value={passwordConfirmation}
+                  onChange={(event) => setPasswordConfirmation(event.target.value)}
+                  minLength={8}
+                  maxLength={128}
+                  required
+                />
+              </div>
+            </>
+          ) : (
+            <>
+              {isSignup && (
+                <>
+                  <div className="form-group">
+                    <label htmlFor="signup-name"><User size={14} /> Full name</label>
+                    <input
+                      id="signup-name"
+                      name="name"
+                      autoComplete="name"
+                      value={fullName}
+                      onChange={(event) => setFullName(event.target.value)}
+                      minLength={2}
+                      maxLength={100}
+                      required
+                    />
+                  </div>
+                  <div className="form-group">
+                    <label htmlFor="signup-phone">Phone number <span>(optional)</span></label>
+                    <input
+                      id="signup-phone"
+                      name="tel"
+                      type="tel"
+                      autoComplete="tel"
+                      value={phone}
+                      onChange={(event) => setPhone(event.target.value)}
+                      maxLength={20}
+                    />
+                  </div>
+                </>
+              )}
+
+              <div className="form-group">
+                <label htmlFor="account-email">
+                  <Mail size={14} /> {activeTab === "admin" ? "Administrator email" : "Email address"}
+                </label>
+                <input
+                  id="account-email"
+                  name="email"
+                  type="email"
+                  autoComplete="email"
+                  value={email}
+                  onChange={(event) => setEmail(event.target.value)}
+                  readOnly={activeTab === "admin" && Boolean(adminEmail)}
+                  required
+                />
+              </div>
+
+              <div className="form-group">
+                <label htmlFor="account-password">
+                  {activeTab === "admin" ? <Key size={14} /> : <Lock size={14} />}
+                  Password
+                </label>
+                <input
+                  id="account-password"
+                  name="password"
+                  type="password"
+                  autoComplete={isSignup ? "new-password" : "current-password"}
+                  value={password}
+                  onChange={(event) => setPassword(event.target.value)}
+                  minLength={8}
+                  maxLength={128}
+                  required
+                />
+              </div>
+            </>
+          )}
+
+          {!recoveryMode && activeTab === "customer" && !isSignup && (
+            <button
+              type="button"
+              className="auth-text-button"
+              onClick={handlePasswordReset}
+              disabled={isSubmitting || !backendConfigured}
+            >
+              Forgot password?
+            </button>
+          )}
+
+          {!recoveryMode && activeTab === "admin" && (
+            <p className="auth-admin-note">
+              Administrator access is limited to the configured store account.
+            </p>
+          )}
+
+          <button
+            type="submit"
+            className={`button ${!recoveryMode && activeTab === "admin" ? "admin-accent" : "primary"} full-width`}
+            disabled={isSubmitting || !backendConfigured}
+          >
+            {isSubmitting
+              ? "Please wait..."
+              : recoveryMode
+                ? "Update password"
+                : isSignup
+                ? "Create customer account"
+                : activeTab === "admin"
+                  ? "Sign in to admin"
+                  : "Sign in"}
+            {!isSubmitting && <ArrowRight size={15} />}
+          </button>
+        </form>
+
         <div className="modal-footer-notes">
           <CheckCircle size={13} />
-          <span>Demo state persists in your browser. Feel free to add sarees, edit texts, or customize freely.</span>
+          <span>Your password is handled securely by Supabase Authentication.</span>
         </div>
       </div>
     </div>

@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import SafeImage from "./SafeImage";
 import {
   X,
   Heart,
@@ -22,19 +23,26 @@ export default function SareeCatalogModal({
   wished = false,
   onToggleWishlist,
   whatsappNumber = "918669851581",
-  onSubmitEnquiry
+  onSubmitEnquiry,
+  enquiryName = "",
+  enquiryPhone = ""
 }) {
   const [activePhotoIndex, setActivePhotoIndex] = useState(0);
   const [enquiryOpen, setEnquiryOpen] = useState(false);
-  const [customerName, setCustomerName] = useState("");
-  const [customerPhone, setCustomerPhone] = useState("");
+  const [customerName, setCustomerName] = useState(enquiryName);
+  const [customerPhone, setCustomerPhone] = useState(enquiryPhone);
+  const [enquiryError, setEnquiryError] = useState("");
+  const [savingEnquiry, setSavingEnquiry] = useState(false);
+  const [whatsappFallbackUrl, setWhatsappFallbackUrl] = useState("");
 
   useEffect(() => {
     setActivePhotoIndex(0);
     setEnquiryOpen(false);
-    setCustomerName("");
-    setCustomerPhone("");
-  }, [product]);
+    setCustomerName(enquiryName);
+    setCustomerPhone(enquiryPhone);
+    setEnquiryError("");
+    setWhatsappFallbackUrl("");
+  }, [product, enquiryName, enquiryPhone]);
 
   // Handle ESC key to close
   useEffect(() => {
@@ -81,24 +89,11 @@ export default function SareeCatalogModal({
 
   const money = (n) => `${currency}${Number(n).toLocaleString("en-IN")}`;
 
-  const handleEnquirySubmit = (event) => {
+  const handleEnquirySubmit = async (event) => {
     event.preventDefault();
     const name = customerName.trim();
     const phone = customerPhone.trim();
     const message = `Enquiry for ${product.name} (ID: ${product.id})`;
-
-    onSubmitEnquiry({
-      id: `INQ-${Date.now()}`,
-      customerName: name,
-      phone,
-      product: product.name,
-      productId: product.id,
-      message,
-      status: "New",
-      time: new Date().toLocaleString(),
-      createdAt: new Date().toISOString()
-    });
-
     const whatsappRecipient = (whatsappNumber || "918669851581").replace(/\D/g, "");
     const whatsappMessage = `Hello SareeVira! I would like to enquire about:
 *${product.name}* (ID: ${product.id})
@@ -108,12 +103,33 @@ Contact: ${phone}
 Currently viewing: ${currentPhoto.part} (${currentPhoto.title})
 
 Please share availability and delivery details.`;
-    window.open(
-      `https://wa.me/${whatsappRecipient}?text=${encodeURIComponent(whatsappMessage)}`,
-      "_blank",
-      "noopener,noreferrer"
-    );
-    setEnquiryOpen(false);
+    const whatsappUrl = `https://wa.me/${whatsappRecipient}?text=${encodeURIComponent(whatsappMessage)}`;
+    const whatsappWindow = window.open("about:blank", "_blank");
+    if (whatsappWindow) whatsappWindow.opener = null;
+    setSavingEnquiry(true);
+    setEnquiryError("");
+
+    try {
+      await onSubmitEnquiry({
+        customerName: name,
+        phone,
+        product: product.name,
+        productId: product.id,
+        message
+      });
+      if (whatsappWindow) {
+        whatsappWindow.location.href = whatsappUrl;
+        setEnquiryOpen(false);
+      } else {
+        setWhatsappFallbackUrl(whatsappUrl);
+        setEnquiryError("Your enquiry was saved, but your browser blocked WhatsApp. Open WhatsApp to contact the store.");
+      }
+    } catch (error) {
+      if (whatsappWindow) whatsappWindow.close();
+      setEnquiryError(error.message || "Your enquiry could not be saved. Please try again.");
+    } finally {
+      setSavingEnquiry(false);
+    }
   };
 
   const nextPhoto = () => {
@@ -139,7 +155,7 @@ Please share availability and delivery details.`;
           <div className="catalog-gallery-pane">
             {/* Main High-Res Image Stage */}
             <div className="catalog-main-stage">
-              <img
+              <SafeImage
                 src={currentPhoto.image}
                 alt={`${product.name} - ${currentPhoto.part}`}
                 className="catalog-stage-image"
@@ -196,7 +212,7 @@ Please share availability and delivery details.`;
                   className={`thumb-button ${activePhotoIndex === idx ? "active-thumb" : ""}`}
                   onClick={() => setActivePhotoIndex(idx)}
                 >
-                  <img src={item.image} alt={item.part} />
+                  <SafeImage src={item.image} alt={item.part} />
                   <span className="thumb-part-label">{item.part}</span>
                 </button>
               ))}
@@ -293,7 +309,19 @@ Please share availability and delivery details.`;
                   <ArrowLeft size={14} /> Back to catalog
                 </button>
                 <h3>Where can we reach you?</h3>
-                <p>Your details will be added to our enquiry list and included in your WhatsApp message.</p>
+                <p>Your details will be included in the WhatsApp message and saved securely for the store team.</p>
+                {enquiryError && <p className="auth-message error" role="alert">{enquiryError}</p>}
+                {whatsappFallbackUrl && (
+                  <a
+                    className="button primary full-width wa-enquire-main"
+                    href={whatsappFallbackUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    <MessageCircle size={18} />
+                    <span>Open WhatsApp</span>
+                  </a>
+                )}
                 <label>
                   <span><User size={14} /> Your name</span>
                   <input
@@ -311,16 +339,23 @@ Please share availability and delivery details.`;
                     type="tel"
                     autoComplete="tel"
                     required
-                    pattern="\+?[0-9][0-9 ]{5,18}[0-9]"
-                    title="Enter a valid phone number"
+                    maxLength={20}
                     value={customerPhone}
                     onChange={(event) => setCustomerPhone(event.target.value)}
                     placeholder="+91 98765 43210"
                   />
                 </label>
-                <button className="button primary full-width wa-enquire-main" type="submit">
+                <button
+                  className="button primary full-width wa-enquire-main"
+                  type="submit"
+                  disabled={savingEnquiry || Boolean(whatsappFallbackUrl)}
+                >
                   <MessageCircle size={18} />
-                  <span>Save details & continue to WhatsApp</span>
+                  <span>{savingEnquiry
+                    ? "Saving your enquiry..."
+                    : whatsappFallbackUrl
+                      ? "Enquiry saved"
+                      : "Save details & continue to WhatsApp"}</span>
                 </button>
               </form>
             ) : (

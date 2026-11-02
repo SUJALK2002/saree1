@@ -1,8 +1,20 @@
-import React from "react";
-import { X, User, Package, Heart, MapPin, Mail, Phone, Calendar, ArrowRight, LogOut, ExternalLink } from "lucide-react";
+import React, { useState } from "react";
+import { X, Package, Heart, MapPin, Mail, Phone, Calendar, ArrowRight, LogOut } from "lucide-react";
 
 export default function CustomerModal({ isOpen, onClose, customer, wishlistCount, onLogout, onGoToWishlist }) {
+  const [logoutError, setLogoutError] = useState("");
   if (!isOpen || !customer) return null;
+
+  const handleSignOut = async () => {
+    setLogoutError("");
+    try {
+      const signedOut = await onLogout();
+      if (!signedOut) throw new Error("Please try signing out again.");
+      onClose();
+    } catch (error) {
+      setLogoutError(error.message || "Unable to sign out. Please try again.");
+    }
+  };
 
   return (
     <div className="modal-backdrop" onClick={onClose}>
@@ -16,7 +28,7 @@ export default function CustomerModal({ isOpen, onClose, customer, wishlistCount
             <span>{customer.name?.charAt(0) || "P"}</span>
           </div>
           <div className="customer-banner-info">
-            <span className="customer-tag">VIP BOUTIQUE MEMBER</span>
+            <span className="customer-tag">SAREEVIRA CUSTOMER</span>
             <h3>{customer.name}</h3>
             <p><Mail size={13} /> {customer.email}</p>
           </div>
@@ -27,7 +39,7 @@ export default function CustomerModal({ isOpen, onClose, customer, wishlistCount
             <Package size={18} />
             <div>
               <b>{customer.orders?.length || 0} Orders</b>
-              <small>Delivered safely</small>
+              <small>Order history</small>
             </div>
           </div>
           <div className="c-stat highlight" onClick={() => { onClose(); onGoToWishlist(); }}>
@@ -40,8 +52,8 @@ export default function CustomerModal({ isOpen, onClose, customer, wishlistCount
           <div className="c-stat">
             <Calendar size={18} />
             <div>
-              <b>Member Since</b>
-              <small>{customer.memberSince || "2024"}</small>
+              <b>Account created</b>
+              <small>{customer.memberSince || "Recently"}</small>
             </div>
           </div>
         </div>
@@ -66,6 +78,7 @@ export default function CustomerModal({ isOpen, onClose, customer, wishlistCount
                 </div>
               </div>
             ))}
+            {!customer.orders?.length && <p className="empty-orders">You have no orders yet.</p>}
           </div>
         </div>
 
@@ -74,17 +87,18 @@ export default function CustomerModal({ isOpen, onClose, customer, wishlistCount
           <div className="shipping-info-grid">
             <div>
               <small>Primary Phone</small>
-              <p><Phone size={13} /> {customer.phone}</p>
+              <p><Phone size={13} /> {customer.phone || "Not provided"}</p>
             </div>
             <div>
               <small>Delivery Address</small>
-              <p>{customer.city}</p>
+              <p>Address not saved</p>
             </div>
           </div>
         </div>
 
         <div className="customer-actions">
-          <button className="button secondary" onClick={() => { onLogout(); onClose(); }}>
+          {logoutError && <p className="auth-message error" role="alert">{logoutError}</p>}
+          <button className="button secondary" onClick={handleSignOut}>
             <LogOut size={15} /> Sign Out of Customer Account
           </button>
           <button className="button primary" onClick={onClose}>

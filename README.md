@@ -1,40 +1,50 @@
-# SareeVira — Saree Boutique Starter
+# SareeVira
 
-A React + Vite frontend starter for a premium saree catalogue with a spacious cream/lavender aesthetic, animated cards, wishlist interaction, and WhatsApp enquiry links.
+Responsive React + Vite saree storefront with product galleries, customer accounts, WhatsApp enquiries, and a protected admin dashboard.
 
-## Run locally
+## Local setup
 
-1. Install Node.js (LTS).
-2. Extract this folder.
-3. Run:
+1. Install Node.js LTS.
+2. Copy `.env.example` to `.env`.
+3. Fill in the Supabase project URL and public anon/publishable key from **Supabase → Project Settings → API**. Keep `.env` private and never use a service-role key in the browser.
+4. Install dependencies and run the app:
 
-```bash
+```powershell
 npm install
-cp .env.example .env
 npm run dev
 ```
 
-On Windows PowerShell, copy `.env.example` to `.env` manually if `cp` is unavailable.
+## Supabase setup
 
-## Important status
+1. Create a Supabase project and configure its Auth site URL and redirect URLs for your local and production domains.
+2. Keep email confirmation enabled. Configure production email delivery before enabling customer sign-up.
+3. In the Supabase SQL Editor, run `supabase/migrations/20261102220000_production_foundation.sql`.
+4. Create the administrator account using the customer sign-up form with **`sujalkalamkar2234@gmail.com`**, then confirm the email. Alternatively, create that confirmed user in Supabase Auth.
+5. Promote only that confirmed account in the SQL Editor:
 
-This is a **frontend starter/demo**, not a production-ready store yet:
-- Product cards currently use demo data.
-- Saree enquiries ask for a name and phone number, open WhatsApp with the saree details, and appear in the admin leads dashboard.
-- Site settings, products, and enquiries are stored in the current browser's local storage; they are not shared across devices or browsers.
-- The “Admin Demo” panel updates this browser's local data only; Supabase database and authentication are not connected.
-- Supabase environment variables are prepared, but database/auth/storage CRUD is not wired.
-- The demo WhatsApp number is a placeholder; update it in Admin → Store & Contact Info.
-- Replace demo images with owned/licensed saree photography.
+   ```sql
+   update public.profiles
+   set role = 'admin'
+   where lower(email) = 'sujalkalamkar2234@gmail.com'
+     and id in (
+       select id
+       from auth.users
+       where lower(email) = 'sujalkalamkar2234@gmail.com'
+         and email_confirmed_at is not null
+     );
+   ```
 
-## Next implementation steps
+   Verify that exactly one row was updated. The database policy also checks this fixed email; customer signup cannot assign an administrator role.
+6. Set `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`, `VITE_ADMIN_EMAIL`, and `VITE_WHATSAPP_NUMBER` in the hosting provider's environment settings, then rebuild and deploy.
+7. Test a customer sign-up, email confirmation, sign-in, password reset, product enquiry, WhatsApp handoff, and admin sign-in on the deployed domain.
 
-1. Create a Supabase project.
-2. Create `sarees`, `saree_images`, `categories`, `enquiries`, `admin_profiles`, and `website_settings` tables.
-3. Add strict RLS policies and Storage policies.
-4. Connect product queries and image uploads to Supabase.
-5. Implement secure admin login and protected admin routes.
-6. Replace the demo admin panel with a full admin dashboard.
-7. Test the public catalogue and enquiry process before launch.
+The administrator login ID is **`sujalkalamkar2234@gmail.com`**. No password is embedded or pre-created in this project. Set a strong password during account creation and store it in a password manager.
 
-Never put a Supabase service-role key in a Vite frontend. Use only the public anon/publishable key in client code and enforce permissions with RLS.
+## Current scope
+
+- Customer email/password accounts use Supabase Auth. Profiles are protected by row-level security.
+- Product and storefront content are saved in the single `store_content` row. Enquiries are stored in `enquiries` and visible only to the administrator.
+- Product photography uses the configured demo image URLs with a local illustrated fallback at `/saree-placeholder.svg`.
+- Wishlists are stored in the current browser. Orders, payments, shipping-address management, image uploads, and production product inventory are not implemented.
+
+Do not describe the site as production-connected until the Supabase project is configured, the migration is applied, the administrator is provisioned, and the deployed flows have been tested.

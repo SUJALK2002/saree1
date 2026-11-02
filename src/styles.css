@@ -3024,6 +3024,134 @@ footer > small {
   .product-grid {
     grid-template-columns: 1fr;
   }
+
+  .auth-modal {
+    width: min(460px, 100%);
+  }
+
+  .auth-mode-toggle {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 6px;
+    padding: 4px;
+    margin: -8px 0 18px;
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    background: #fcf8fb;
+  }
+
+  .auth-mode-toggle button {
+    min-height: 38px;
+    border: 0;
+    border-radius: 9px;
+    background: transparent;
+    color: var(--muted);
+    font-size: 12px;
+    font-weight: 600;
+  }
+
+  .auth-mode-toggle button.active {
+    background: #fff;
+    color: var(--plum);
+    box-shadow: var(--shadow-sm);
+  }
+
+  .auth-message {
+    margin: 0 0 14px;
+    padding: 11px 13px;
+    border: 1px solid;
+    border-radius: 11px;
+    font-size: 12px;
+    line-height: 1.5;
+  }
+
+  .auth-message.error,
+  .app-alert {
+    border-color: #eab9bf;
+    background: #fff3f3;
+    color: #842c37;
+  }
+
+  .auth-message.success {
+    border-color: #b7ddc4;
+    background: #f0fbf3;
+    color: #24633b;
+  }
+
+  .auth-admin-note {
+    margin: 0;
+    color: var(--muted);
+    font-size: 11px;
+    line-height: 1.5;
+  }
+
+  .auth-text-button {
+    justify-self: end;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    color: var(--plum);
+    font-size: 12px;
+    font-weight: 600;
+    text-decoration: underline;
+  }
+
+  .auth-text-button:disabled,
+  .auth-form button:disabled,
+  .catalog-enquiry-form button:disabled {
+    cursor: wait;
+    opacity: .65;
+  }
+
+  .app-alert {
+    position: relative;
+    z-index: 50;
+    padding: 10px 18px;
+    border-width: 0 0 1px;
+    text-align: center;
+    font-size: 12px;
+    line-height: 1.5;
+  }
+
+  .empty-orders {
+    margin: 0;
+    padding: 12px;
+    color: var(--muted);
+    font-size: 12px;
+    text-align: center;
+  }
+
+  .site-loading {
+    min-height: 100vh;
+    display: grid;
+    place-items: center;
+    padding: 24px;
+    color: var(--plum);
+    background: var(--cream);
+    font-size: 14px;
+    font-weight: 600;
+  }
+
+  @media (max-width: 580px) {
+    .modal-backdrop {
+      padding: 10px;
+    }
+
+    .auth-modal {
+      padding: 28px 20px 22px;
+      border-radius: 20px;
+      max-height: min(92dvh, 760px);
+    }
+
+    .auth-modal .modal-header h2 {
+      font-size: 23px;
+    }
+
+    .app-alert {
+      padding: 9px 12px;
+      font-size: 11px;
+    }
+  }
   .auth-dual-buttons {
     display: none; /* In mobile view, accessible via hamburger drawer or login button */
   }

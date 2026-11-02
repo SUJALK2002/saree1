@@ -1,5 +1,6 @@
 import React from "react";
 import { motion } from "framer-motion";
+import SafeImage from "./SafeImage";
 import {
   ArrowRight,
   Sparkles,
@@ -80,7 +81,7 @@ export default function Storefront({
 
         <div className="hero-visual">
           <div className="hero-orb"></div>
-          <img src={hero.heroImage} alt="Elegant saree editorial" />
+          <SafeImage src={hero.heroImage} alt="Elegant saree editorial" />
         </div>
         <div className="hero-glow"></div>
       </section>
@@ -104,7 +105,7 @@ export default function Storefront({
                 document.getElementById("arrivals")?.scrollIntoView({ behavior: "smooth" });
               }}
             >
-              <img src={col.image} alt={col.name} />
+              <SafeImage src={col.image} alt={col.name} />
               <div className="collection-shade" />
               <span className="collection-num">0{i + 1}</span>
               <h3>{col.name}</h3>
@@ -196,7 +197,7 @@ export default function Storefront({
           </a>
         </div>
         <div className="festive-image">
-          <img src={festiveSection.image} alt="Festive saree editorial" />
+          <SafeImage src={festiveSection.image} alt="Festive saree editorial" />
         </div>
       </section>
 
@@ -254,7 +255,7 @@ function ProductCard({ p, currency = "₹", wished, toggleWish, onOpenCatalog })
       <div className="flip-inner">
         <div className="product-front">
           <div className="product-image">
-            <img src={p.image} alt={p.name} />
+            <SafeImage src={p.image} alt={p.name} />
             {p.tag && <span className="tag">{p.tag}</span>}
             <button
               className={`heart ${wished ? "active" : ""}`}
